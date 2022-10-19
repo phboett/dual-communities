@@ -5,7 +5,7 @@ import numpy as np
 import networkx as nx
 
 
-def redefined_index(list_of_tuples,element):
+def redefined_index(list_of_tuples: list, element: tuple) -> int:
     """redefine implemented index method for list 
     
     Parameters
@@ -32,7 +32,7 @@ def redefined_index(list_of_tuples,element):
     return index
 
 
-def calc_PTDF_matrix(G,I=np.array([])):
+def calc_PTDF_matrix(G: nx.Graph, I: np.ndarray = np.array([])):
     """Calculate Power Transfer Distribution Factor (PTDF) Matrix for power injections along graph's edges
     NOTE: This PTDF matrix is already multiplied from the right by the graphs 
     incidence matrix, thus assuming power injections only to take place at the terminal
@@ -75,7 +75,7 @@ def calc_PTDF_matrix(G,I=np.array([])):
     return PTDF_matrix
 
 
-def calc_LODF_matrix(G):
+def calc_LODF_matrix(G: nx.Graph):
     """B is the nodal susceptance matrix, i.e. the weighted graph Laplacian"""
     
     PTDF_mat = calc_PTDF_matrix(G)

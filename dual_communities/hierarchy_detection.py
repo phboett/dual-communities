@@ -11,7 +11,7 @@ import networkx as nx
 import numpy as np
 
 
-def find_fiedler_vector(graph, atol=1e-12):
+def find_fiedler_vector(graph: nx.Graph, atol: float = 1e-12):
     """Get the eigenvector of the second eigenvalue of the graphs laplacian"""
     
     laplacian = nx.laplacian_matrix(graph).A
@@ -24,13 +24,13 @@ def find_fiedler_vector(graph, atol=1e-12):
 
 
 def calc_fiedler_communities_dual_hierarchy_detection(G_dual,
-                                                       G,
-                                                       removed_edges,
-                                                       return_dual_comms = False,
-                                                       use_median = True,
-                                                       clean_boundary_dublicate=False,
-                                                       networkx_fiedler=True,
-                                                       nx_fiedler_method='tracemin_pcg'):
+                                                      G,
+                                                      removed_edges,
+                                                      return_dual_comms = False,
+                                                      use_median = True,
+                                                      clean_boundary_dublicate=False,
+                                                      networkx_fiedler=True,
+                                                      nx_fiedler_method='tracemin_pcg'):
     """Calc edges belonging to dual communities based on the Fiedler vector using graph that has
     been separated into two subgraphs, such that links might be missing (because the faces
     are no longer completely contained in the graph due to the removal of boundary edges)
@@ -309,7 +309,7 @@ def remove_open_ends(G):
 
 def get_boundary_infos(leaf, boundaries, cut_lvl=3):
     """get boundary links in primal graph corresponding to
-    community boundray in dual to visuals hierrachies"""
+    community boundary in dual to visuals hierarchies"""
     partition_levels = np.arange(cut_lvl)
     boundary_dictionary = {(u, v): -1000 for u, v in leaf.edges()}
     boundary_width = {(u, v): 1. for u, v in leaf.edges()}

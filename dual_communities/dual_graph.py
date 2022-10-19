@@ -185,3 +185,22 @@ def create_dual_from_graph(graph, min_component_size=None):
                 pass
     
     return G_dual_noloops
+
+
+def get_boundary_infos(graph: nx.Graph, boundaries, cut_lvl:int = 3):
+    """get boundary links in primal graph corresponding to community 
+    boundary in dual to visuals hierarchies"""
+    
+    partition_levels = np.arange(cut_lvl)
+    boundary_dictionary = {(u, v): -1000 for u, v in graph.edges()}
+    boundary_width = {(u, v): 1. for u, v in graph.edges()}
+    
+    for partition_level in partition_levels:
+        
+        for j in range(2**(partition_level)):
+            
+            for u, v in boundaries[partition_level][j]:
+                boundary_dictionary[(u, v)] = partition_level
+                boundary_width[(u, v)] = 3.
+
+    return boundary_dictionary, boundary_width

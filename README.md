@@ -17,6 +17,13 @@ conda env create --prefix=<path> -f dual_env.yml
 conda activate <path>
 ```
 
+Furthermore, to run the examples in the Notebook `examples.ipynb`, you need to run 
+
+```shell
+conda install -c conda-forge nb_conda_kernels notebook
+```
+to be able to run Jupyter Notebooks.
+
 ## Usage
 
 ### Basic Usage
