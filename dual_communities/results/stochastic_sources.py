@@ -7,6 +7,7 @@ runs of different synthetic leafs and averaging the fielder values over the same
 
 import os
 import numpy as np
+import networkx as nx
 
 import gzip
 import pickle
@@ -16,8 +17,11 @@ from tqdm import tqdm
 from multiprocessing import Pool as mpool
 
 from dual_communities import synthetic_leafs
+from dual_communities.dual_graph import create_dual_from_graph
 
 from functools import partial
+
+import glob
 
 out_data_path = "generated_data/stochastic_sources"
 if not os.path.exists(out_data_path):
@@ -90,7 +94,7 @@ def generate_data_multi_sources(sigma_sq_loglims: tuple, nof_sources: int,
     return
 
 
-def generate_for_two_sources(nn_vals=50, iterations=20):
+def generate_for_two_sources(nn_vals=50, KK=500, iterations=20):
     """Generate the data for the system with two stochastic sources."""
     
     sigma_sq_loglims: tuple = (0.5, 5)
@@ -99,3 +103,59 @@ def generate_for_two_sources(nn_vals=50, iterations=20):
         generate_data_multi_sources(sigma_sq_loglims, nof_sources, nn_vals=nn_vals, suffix="_run{}".format(idx))
     
     return
+
+
+def analyse_for_two_sources(NN=26, nof_sources=2, gamma=.9, threshold=1e-10, 
+                            link_threshold=1e-8, KK=500):
+    """Find the fiedler value for both primal and dual graphs to save them.
+
+    Args:
+        NN (int, optional): _description_. Defaults to 26.
+        nof_sources (int, optional): _description_. Defaults to 2.
+        gamma (float, optional): _description_. Defaults to .9.
+        threshold (_type_, optional): _description_. Defaults to 1e-10.
+        link_threshold (_type_, optional): _description_. Defaults to 1e-8.
+        KK (int, optional): _description_. Defaults to 500.
+
+    Returns:
+        _type_: _description_
+    """
+    search_pattern = ( out_data_path +
+                 "/synthetic_NN{0}_Ns{1}_K{2:.2f}_gamma{3:.4f}_threshold{4:.1E}_linkatol{5:.1E}*.pklz".format(NN, nof_sources, KK, gamma,
+                                                                                                            threshold, link_threshold))
+    
+    file_ls = glob.glob(search_pattern)
+    
+    total_res_dict = dict()
+    
+    for file_r in tqdm(file_ls):
+        print(file_r)
+        with gzip.open(file_r, 'rb') as fh_in:
+            res_dict_r = pickle.load(fh_in)
+            
+            for key, ele in tqdm(res_dict_r.items(), leave=False):
+                fiedler_primal = nx.algebraic_connectivity(ele)
+                primal_lap_tr = np.trace(nx.laplacian_matrix(ele).todense())
+                
+                dual_graph = create_dual_from_graph(ele)
+                dual_lap_tr = np.trace(nx.laplacian_matrix(ele).todense())
+                fielder_dual = nx.algebraic_connectivity(dual_graph)
+                
+                fiedler_res_r = (fiedler_primal/primal_lap_tr,
+                                 fielder_dual/dual_lap_tr)
+                
+                key_rounded = np.round(key, decimals=5)
+                if key_rounded not in total_res_dict:
+                    total_res_dict[key_rounded] = [fiedler_res_r]
+                    
+                else:
+                    total_res_dict[key_rounded].append(fiedler_res_r)
+                    
+    out_fpath = (out_data_path + "/all_synthetic_"+
+                 "NN{0}_Ns{1}_K{2:.2f}_gamma{3:.4f}_threshold{4:.1E}_linkatol{5:.1E}*.pklz".format(NN, nof_sources, KK, gamma,
+                                                                                                            threshold, link_threshold))
+     
+    with gzip.open(out_fpath, 'wb') as fh_out:
+        pickle.dump(total_res_dict, fh_out)
+                    
+    return total_res_dict
