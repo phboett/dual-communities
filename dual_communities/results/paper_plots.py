@@ -536,7 +536,7 @@ def primal_and_dual_communities_in_spatial_networks(save_fig: bool = False):
     nx.draw_networkx_nodes(strong_graph, 
                                 dual_pos,
                                 ax = ax[0,1], 
-                                node_size = 0)#)#
+                                node_size = 0)
 
     nx.draw_networkx_edges(strong_graph,
                             dual_pos,

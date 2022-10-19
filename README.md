@@ -34,7 +34,9 @@ The basic usage for a few examples can be found in the jupyter-notebook
 
 ### Results Presented in Publication
 
-The code needed to produce the data to generate the plots in the paper can be found in [dual_communities/results](./dual_communities/results).
+The scripts found in   [dual_communities/results](./dual_communities/results) can be used to reproduce results presented in the publication.
+
+The scripts `paper_data` and `paper_plots` are meta scripts that collect data generation functions and plot functions, respectively.
 
 
 ## Data 
