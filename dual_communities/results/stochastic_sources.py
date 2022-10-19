@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*
 
 """Generate the data for the figures with stochastic sources using the model defined
-in synthetic leafs."""
+in synthetic leafs. The corresponding figure is created creating multiple
+runs of different synthetic leafs and averaging the fielder values over the same parameters."""
 
 import os
 import numpy as np
@@ -17,7 +18,11 @@ from multiprocessing import Pool as mpool
 from dual_communities import synthetic_leafs
 
 from functools import partial
-script_path = os
+
+out_data_path = "generated_data/stochastic_sources"
+if not os.path.exists(out_data_path):
+    os.mkdir(out_data_path)
+
 def single_call_syn(NN, dirichlet_const, nof_sources, gamma, threshold, pars_tup):
     
     sigma_sq_r, dirich_par = pars_tup
@@ -35,7 +40,7 @@ def single_call_syn(NN, dirichlet_const, nof_sources, gamma, threshold, pars_tup
 
 def generate_data_multi_sources(sigma_sq_loglims: tuple, nof_sources: int,
                                 nn_vals: int = 50, nr_procs: int = 2, KK: float = 500., NN: int = 26,
-                                gamma=.9, threshold=1e-10, link_threshold=1e-8):
+                                gamma=.9, threshold=1e-10, link_threshold=1e-8, suffix: str = ""):
     """Optimized edge weights of lattice according to function in synthetic_leafs.py and scan over
     different fluctuation strength to see how the network changes.
 
@@ -48,6 +53,7 @@ def generate_data_multi_sources(sigma_sq_loglims: tuple, nof_sources: int,
         NN (int, optional): Number of nodes. Defaults to 26.
         link_threshold (float): Threshold to remove links that have 
         a negliable capacity after the optimzation algorithm
+        suffix (str): str after filename to make multiple runs with same parameters possible
     """
     
     sigma_sq_arr = np.logspace(min(sigma_sq_loglims),
@@ -61,7 +67,7 @@ def generate_data_multi_sources(sigma_sq_loglims: tuple, nof_sources: int,
     with mpool(processes=nr_procs) as pool:
         
         res_dict = dict()
-        part_func = partial(single_call_syn, NN, KK, nof_sources, gamma)
+        part_func = partial(single_call_syn, NN, KK, nof_sources, gamma, threshold)
         
         for ii, res_r in enumerate(tqdm(pool.imap(part_func, par_arr), total=len(par_arr))):
             sigma_sq_r, network_r = res_r
@@ -74,32 +80,22 @@ def generate_data_multi_sources(sigma_sq_loglims: tuple, nof_sources: int,
             res_dict[sigma_sq_r] = network_r
     
     # Save results
-    fpath_out = (script_path + "/data/" +
-                 "synthetic_NN{0}_Ns{1}_K{2:.2f}_gamma{3:.4f}_threshold{4:.1E}_linkatol{5:.1E}.pklz".format(NN, nof_sources, KK, gamma,
-                                                                                                            threshold, link_threshold))
+    fpath_out = ( out_data_path +
+                 "/synthetic_NN{0}_Ns{1}_K{2:.2f}_gamma{3:.4f}_threshold{4:.1E}_linkatol{5:.1E}{6}.pklz".format(NN, nof_sources, KK, gamma,
+                                                                                                            threshold, link_threshold,
+                                                                                                            suffix))
     with gzip.open(fpath_out, 'wb') as fh_out:
         pickle.dump(res_dict,fh_out)
         
     return
 
 
-def generate_for_two_sources(nn_vals=50):
+def generate_for_two_sources(nn_vals=50, iterations=20):
     """Generate the data for the system with two stochastic sources."""
     
     sigma_sq_loglims: tuple = (0.5, 5)
     nof_sources = 2
-    
-    generate_data_multi_sources(sigma_sq_loglims, nof_sources, nn_vals=nn_vals)
-    
-    return
-
-
-def generate_for_three_sources(nn_vals=50):
-    """Generate the data for the system with three sources."""
-    
-    sigma_sq_loglims: tuple = (0.5, 5)
-    nof_sources = 3
-    
-    generate_data_multi_sources(sigma_sq_loglims, nof_sources, nn_vals=nn_vals)
+    for idx in range(iterations):
+        generate_data_multi_sources(sigma_sq_loglims, nof_sources, nn_vals=nn_vals, suffix="_run{}".format(idx))
     
     return

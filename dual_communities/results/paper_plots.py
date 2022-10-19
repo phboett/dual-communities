@@ -70,7 +70,7 @@ def connection_communities_network_robustness(calculate_lodfs: bool = False,
     color_ls_net = ["#8dd3c7", "#ffffb3", "#bebada"]
     
     # Load and calculate LODF for both networks
-    leaf_path_name = out_data_path + "/BronxA_125_binary_corrected_graph_fiedlerestimate_figure.pklz"
+    leaf_path_name = out_data_path + "/BronxA_125_binary_corrected_graph.pklz"
     failing_link_leaf = (15118, 8087)
     failing_link_scandinavia = ('6592', '6861')
     
@@ -620,7 +620,7 @@ def primal_and_dual_communities_in_spatial_networks(save_fig: bool = False):
     
     ## Leaf
     # Load maple 
-    with gzip.open(out_data_path + "/maple2c_80_graph_fiedlerestimate_figure.pklz", "rb") as fh_maple:
+    with gzip.open(out_data_path + "/maple2c_80_graph.pklz", "rb") as fh_maple:
         maple_gra, maple_gra_dual, maple_gra_lvls, maple_gra_dual_lvls, maple_boundaries = pickle.load(fh_maple)
     ## Fiedler
     with gzip.open(out_data_path + "/Maple_primal_and_dual_fiedlerval_n_vec_sparse.pklz", "rb") as fh_maple_fiedler:
@@ -1037,11 +1037,11 @@ def algebraic_n_topological_connectivity(save_fig: bool = False, calc_eigvals: b
     and topological connecitivty for the square lattice and some leafs."""
 
     # List containing tuples with (label_graph, internal_label, file_with_graph)
-    file_path_list = [('Acer platanoides', 'Maple', 'maple2c_80_graph_fiedlerestimate_figure.pklz'),
+    file_path_list = [('Acer platanoides', 'Maple', 'maple2c_80_graph.pklz'),
                       ('Schizolobium amazonicum', 'Schizolobium amazonicum',
-                       'BronxA_125_binary_corrected_graph_fiedlerestimate_figure.pklz'),
+                       'BronxA_125_binary_corrected_graph.pklz'),
                       ('Parkia nitida', 'Parkia nitida a',
-                       'BronxA_115_a_binary_corrected_graph_fiedlerestimate_figure.pklz')]
+                       'BronxA_115_a_binary_corrected_graph.pklz')]
 
     
     fig = plt.figure(figsize=(22, 8))
