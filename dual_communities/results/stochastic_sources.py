@@ -88,13 +88,15 @@ def generate_data_multi_sources(sigma_sq_loglims: tuple, nof_sources: int,
     return
 
 
-def generate_for_two_sources(nn_vals=50, KK=500, iterations=20):
+def generate_for_two_sources(nn_vals=50, KK=500, iterations=20, nr_procs=2):
     """Generate the data for the system with two stochastic sources."""
     
     sigma_sq_loglims: tuple = (0.5, 5)
     nof_sources = 2
     for idx in range(iterations):
-        generate_data_multi_sources(sigma_sq_loglims, nof_sources, nn_vals=nn_vals, suffix="_run{}".format(idx), KK=KK)
+        generate_data_multi_sources(sigma_sq_loglims, nof_sources, 
+                                    nn_vals=nn_vals, suffix="_run{}".format(idx), KK=KK,
+                                    nr_procs=nr_procs)
     
     return
 
@@ -131,7 +133,7 @@ def analyse_for_two_sources(NN=26, nof_sources=2, gamma=.9, threshold=1e-10,
                 gra_r = ele.copy()
                 
                 fiedler_primal = nx.algebraic_connectivity(gra_r)
-                primal_lap_tr = np.trace(nx.laplacian_matrix(egra_r).todense())
+                primal_lap_tr = np.trace(nx.laplacian_matrix(gra_r).todense())
                 
                 below_tol_edges = [xx for xx in gra_r.edges()
                                    if gra_r[xx[0]][xx[1]]['weight'] < link_threshold]
