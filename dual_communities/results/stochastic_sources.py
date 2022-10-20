@@ -142,7 +142,7 @@ def analyse_for_two_sources(NN=26, nof_sources=2, gamma=.9, threshold=1e-10,
                 dual_graph = create_dual_from_graph(gra_r)
                 
                 fielder_dual = nx.algebraic_connectivity(dual_graph)
-                dual_lap_tr = np.trace(nx.laplacian_matrix(dual_graph).todense())y
+                dual_lap_tr = np.trace(nx.laplacian_matrix(dual_graph).todense())
                 
                 fiedler_res_r = (fiedler_primal/primal_lap_tr,
                                  fielder_dual/dual_lap_tr)
