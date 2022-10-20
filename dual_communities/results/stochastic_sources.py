@@ -44,7 +44,7 @@ def single_call_syn(NN, dirichlet_const, nof_sources, gamma, threshold, pars_tup
 
 def generate_data_multi_sources(sigma_sq_loglims: tuple, nof_sources: int,
                                 nn_vals: int = 50, nr_procs: int = 2, KK: float = 500., NN: int = 26,
-                                gamma=.9, threshold=1e-10, link_threshold=1e-8, suffix: str = ""):
+                                gamma=.9, threshold=1e-10,  suffix: str = ""):
     """Optimized edge weights of lattice according to function in synthetic_leafs.py and scan over
     different fluctuation strength to see how the network changes.
 
@@ -54,8 +54,7 @@ def generate_data_multi_sources(sigma_sq_loglims: tuple, nof_sources: int,
         nn_vals (int, optional): Number of values of sigma_sq in the scan. Defaults to 50.
         nr_procs (int, optional): Number of processes used by multiprocessing. Defaults to 2.
         KK (float, optional): Scale parameter. Defaults to 500.
-        NN (int, optional): Number of nodes. Defaults to 26.
-        link_threshold (float): Threshold to remove links that have 
+        NN (int, optional): Number of nodes. Defaults to 26. 
         a negliable capacity after the optimzation algorithm
         suffix (str): str after filename to make multiple runs with same parameters possible
     """
@@ -67,26 +66,21 @@ def generate_data_multi_sources(sigma_sq_loglims: tuple, nof_sources: int,
     dirichelet_par_arr = np.asarray([alpha_funci(xx) for xx in sigma_sq_arr])
     
     par_arr = np.asarray([xx for xx in zip(sigma_sq_arr, dirichelet_par_arr)])
-    
+
     with mpool(processes=nr_procs) as pool:
         
         res_dict = dict()
         part_func = partial(single_call_syn, NN, KK, nof_sources, gamma, threshold)
         
         for ii, res_r in enumerate(tqdm(pool.imap(part_func, par_arr), total=len(par_arr))):
-            sigma_sq_r, network_r = res_r
-            
-            # remove links that fall below threshold
-            below_tol_edges = [xx for xx in network_r.edges()
-                               if network_r[xx[0]][xx[1]]['weight'] < link_threshold]
-            network_r.remove_edges_from(below_tol_edges)
+            sigma_sq_r, network_r = res_r            
             
             res_dict[sigma_sq_r] = network_r
     
     # Save results
     fpath_out = ( out_data_path +
-                 "/synthetic_NN{0}_Ns{1}_K{2:.2f}_gamma{3:.4f}_threshold{4:.1E}_linkatol{5:.1E}{6}.pklz".format(NN, nof_sources, KK, gamma,
-                                                                                                            threshold, link_threshold,
+                 "/synthetic_NN{0}_Ns{1}_K{2:.2f}_gamma{3:.4f}_threshold{4:.1E}{5}.pklz".format(NN, nof_sources, KK, gamma,
+                                                                                                            threshold,
                                                                                                             suffix))
     with gzip.open(fpath_out, 'wb') as fh_out:
         pickle.dump(res_dict,fh_out)
@@ -100,14 +94,15 @@ def generate_for_two_sources(nn_vals=50, KK=500, iterations=20):
     sigma_sq_loglims: tuple = (0.5, 5)
     nof_sources = 2
     for idx in range(iterations):
-        generate_data_multi_sources(sigma_sq_loglims, nof_sources, nn_vals=nn_vals, suffix="_run{}".format(idx))
+        generate_data_multi_sources(sigma_sq_loglims, nof_sources, nn_vals=nn_vals, suffix="_run{}".format(idx), KK=KK)
     
     return
 
 
 def analyse_for_two_sources(NN=26, nof_sources=2, gamma=.9, threshold=1e-10, 
                             link_threshold=1e-8, KK=500):
-    """Find the fiedler value for both primal and dual graphs to save them.
+    """Find the fiedler value for both primal and dual graphs to save them. Links in the 
+    primal graph that have a weight below link_threshold will be deleted.
 
     Args:
         NN (int, optional): _description_. Defaults to 26.
@@ -129,16 +124,21 @@ def analyse_for_two_sources(NN=26, nof_sources=2, gamma=.9, threshold=1e-10,
     total_res_dict = dict()
     
     for file_r in tqdm(file_ls):
-        print(file_r)
         with gzip.open(file_r, 'rb') as fh_in:
             res_dict_r = pickle.load(fh_in)
             
             for key, ele in tqdm(res_dict_r.items(), leave=False):
-                fiedler_primal = nx.algebraic_connectivity(ele)
-                primal_lap_tr = np.trace(nx.laplacian_matrix(ele).todense())
+                gra_r = ele.copy()
                 
-                dual_graph = create_dual_from_graph(ele)
-                dual_lap_tr = np.trace(nx.laplacian_matrix(ele).todense())
+                fiedler_primal = nx.algebraic_connectivity(gra_r)
+                primal_lap_tr = np.trace(nx.laplacian_matrix(egra_r).todense())
+                
+                below_tol_edges = [xx for xx in gra_r.edges()
+                                   if gra_r[xx[0]][xx[1]]['weight'] < link_threshold]
+                gra_r.remove_edges_from(below_tol_edges)
+                
+                dual_graph = create_dual_from_graph(gra_r)
+                dual_lap_tr = np.trace(nx.laplacian_matrix(dual_graph).todense())
                 fielder_dual = nx.algebraic_connectivity(dual_graph)
                 
                 fiedler_res_r = (fiedler_primal/primal_lap_tr,
@@ -150,9 +150,11 @@ def analyse_for_two_sources(NN=26, nof_sources=2, gamma=.9, threshold=1e-10,
                     
                 else:
                     total_res_dict[key_rounded].append(fiedler_res_r)
-                    
+                
+                del gra_r
+                
     out_fpath = (out_data_path + "/all_synthetic_"+
-                 "NN{0}_Ns{1}_K{2:.2f}_gamma{3:.4f}_threshold{4:.1E}_linkatol{5:.1E}*.pklz".format(NN, nof_sources, KK, gamma,
+                 "NN{0}_Ns{1}_K{2:.2f}_gamma{3:.4f}_threshold{4:.1E}_linkatol{5:.1E}.pklz".format(NN, nof_sources, KK, gamma,
                                                                                                             threshold, link_threshold))
      
     with gzip.open(out_fpath, 'wb') as fh_out:
