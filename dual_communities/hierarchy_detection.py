@@ -305,19 +305,3 @@ def remove_open_ends(G):
     print("Removed " + str(before-after) + " single nodes from graph")
 
     return kept_indices, G
-
-
-def get_boundary_infos(leaf, boundaries, cut_lvl=3):
-    """get boundary links in primal graph corresponding to
-    community boundary in dual to visuals hierarchies"""
-    partition_levels = np.arange(cut_lvl)
-    boundary_dictionary = {(u, v): -1000 for u, v in leaf.edges()}
-    boundary_width = {(u, v): 1. for u, v in leaf.edges()}
-    for partition_level in partition_levels:
-        for j in range(2**(partition_level)):
-            for u, v in boundaries[partition_level][j]:
-                boundary_dictionary[(u, v)] = partition_level
-                boundary_width[(u, v)] = 3.
-
-    return boundary_dictionary, boundary_width
-

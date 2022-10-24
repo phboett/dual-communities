@@ -23,6 +23,8 @@ from functools import partial
 
 import glob
 
+from matplotlib import pyplot as plt
+
 out_data_path = "generated_data/stochastic_sources"
 if not os.path.exists(out_data_path):
     os.mkdir(out_data_path)
@@ -118,7 +120,7 @@ def analyse_for_two_sources(NN=26, nof_sources=2, gamma=.9, threshold=1e-10,
         _type_: _description_
     """
     search_pattern = ( out_data_path +
-                 "/synthetic_NN{0}_Ns{1}_K{2:.2f}_gamma{3:.4f}_threshold{4:.1E}_linkatol{5:.1E}*.pklz".format(NN, nof_sources, KK, gamma,
+                 "/synthetic_NN{0}_Ns{1}_K{2:.2f}_gamma{3:.4f}_threshold{4:.1E}*.pklz".format(NN, nof_sources, KK, gamma,
                                                                                                             threshold, link_threshold))
     
     file_ls = glob.glob(search_pattern)
