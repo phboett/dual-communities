@@ -1,3 +1,5 @@
+[![DOI](
+https://zenodo.org/badge/doi/10.5281/zenodo.7243770.svg)](https://doi.org/10.5281/zenodo.7243770)
 # Dual Communities
 
 This code accompanies the publication that can be found at [ArXiv:&nbsp;2105.06687](https://arxiv.org/abs/2105.06687).<br>
